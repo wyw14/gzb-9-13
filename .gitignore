@@ -1,12 +1,19 @@
+﻿# Dependencies
 node_modules/
 **/node_modules/
+
+# Build outputs
 dist/
 **/dist/
 build/
 **/build/
+
+# Environment variables
 .env
 .env.*
 !.env.example
+
+# Logs
 *.log
 logs/
 **/logs/
@@ -14,6 +21,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# Caches and temporary files
 .cache/
 **/.cache/
 .vite/
@@ -25,8 +34,16 @@ coverage/
 **/coverage/
 *.tmp
 *.temp
+.tmp/
+**/.tmp/
+
+# OS/editor files
 Thumbs.db
 .DS_Store
+.vscode/
+.idea/
+
+# Archives and large binary assets
 *.zip
 *.tar
 *.tar.gz
@@ -42,9 +59,7 @@ Thumbs.db
 *.psd
 *.ai
 *.sketch
+
+# Runtime uploads / generated files
 server/uploads/
 **/uploads/
-任务提示词.md
-**/任务提示词.md
-任务提示词.md
-**/任务提示词.md
