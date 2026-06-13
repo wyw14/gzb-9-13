@@ -12,6 +12,10 @@ export function appendAuth(imageUrl) {
   return imageUrl + sep + 'userId=' + userStore.user.id
 }
 
+export function getRandomItem(userId) {
+  return api.get('/items/random', { params: { userId } }).then(res => res.data)
+}
+
 export function getItems(userId) {
   return api.get('/items', { params: { userId } }).then(res => res.data)
 }

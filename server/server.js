@@ -77,6 +77,30 @@ async function generateBlurredImage(originalPath) {
   return '/uploads/' + blurredFilename;
 }
 
+app.get('/api/items/random', (req, res) => {
+  const { userId } = req.query;
+  let items = readItems();
+
+  const available = items.filter(item =>
+    item.status === 'available' && item.ownerId !== userId
+  );
+
+  if (available.length === 0) {
+    return res.json(null);
+  }
+
+  const item = available[Math.floor(Math.random() * available.length)];
+
+  res.json({
+    id: item.id,
+    category: item.category,
+    mysteryTags: item.mysteryTags,
+    image: getPublicImage(item),
+    createdAt: item.createdAt,
+    status: item.status
+  });
+});
+
 app.get('/api/items', (req, res) => {
   const { userId } = req.query;
   let items = readItems();
