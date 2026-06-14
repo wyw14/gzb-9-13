@@ -79,6 +79,11 @@ async function generateBlurredImage(originalPath) {
 
 app.get('/api/items/random', (req, res) => {
   const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ error: '缺少用户ID' });
+  }
+
   let items = readItems();
 
   const available = items.filter(item =>

@@ -14,12 +14,14 @@
     </div>
 
     <template v-else>
-      <div class="flip-container" :class="{ 'flipped': revealed }" @click="revealCard">
+      <div class="flip-container" :class="{ 'flipped': revealed }" @click="handleCardClick">
         <div class="flip-card">
           <div class="flip-front">
             <div style="text-align:center;">
               <div style="font-size:80px;margin-bottom:16px;">🎁</div>
-              <p style="color:#667eea;font-size:20px;font-weight:600;">点击拆开盲盒</p>
+              <p style="color:white;font-size:20px;font-weight:600;">
+                {{ isFirstDraw ? '点击开始拆盒' : '点击拆开盲盒' }}
+              </p>
             </div>
           </div>
           <div class="flip-back">
@@ -42,7 +44,7 @@
 
       <div style="text-align:center;margin-top:32px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
         <button class="btn btn-primary" style="padding:14px 36px;font-size:16px;" @click="handleRandom" :disabled="loading">
-          {{ loading ? '抽取中...' : '🎲 再来一次' }}
+          {{ loading ? '抽取中...' : (isFirstDraw ? '🎰 开始拆盒' : '🎲 再来一次') }}
         </button>
         <router-link v-if="currentItem && revealed" :to="'/item/' + currentItem.id">
           <button class="btn btn-secondary" style="padding:14px 36px;font-size:16px;">
@@ -55,7 +57,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { getRandomItem, appendAuth } from '../api/index.js'
 import { userStore } from '../store/user.js'
 
@@ -63,6 +65,7 @@ const currentItem = ref(null)
 const revealed = ref(false)
 const loading = ref(false)
 const noItems = ref(false)
+const isFirstDraw = ref(true)
 
 const categories = {
   book: '书籍类',
@@ -85,28 +88,51 @@ function formatDate(dateStr) {
   return y + '-' + m + '-' + d
 }
 
-function revealCard() {
-  if (!revealed.value && currentItem.value) {
-    revealed.value = true
+function ensureUserId() {
+  if (!userStore.user || !userStore.user.id) {
+    const newId = 'user_' + Math.random().toString(36).substr(2, 16)
+    const newName = '用户' + Math.floor(Math.random() * 10000)
+    userStore.user.id = newId
+    userStore.user.name = newName
+    localStorage.setItem('blind_box_user', JSON.stringify({ id: newId, name: newName }))
+  }
+  return userStore.user.id
+}
+
+function handleCardClick() {
+  if (!revealed.value) {
+    if (isFirstDraw.value) {
+      handleRandom()
+    } else if (currentItem.value) {
+      revealed.value = true
+    }
   }
 }
 
 async function handleRandom() {
+  const userId = ensureUserId()
+  if (!userId) {
+    alert('用户信息异常，请刷新页面重试')
+    return
+  }
+
   loading.value = true
   revealed.value = false
   try {
-    const item = await getRandomItem(userStore.user.id)
+    const item = await getRandomItem(userId)
     if (!item) {
       noItems.value = true
       return
     }
     currentItem.value = item
     noItems.value = false
+    isFirstDraw.value = false
     setTimeout(function() {
       revealed.value = true
     }, 600)
   } catch (e) {
     console.error(e)
+    alert('抽取失败，请稍后重试')
   } finally {
     loading.value = false
   }
